@@ -64,51 +64,68 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-num_symbols = 10 # Number of symbols (reduced for clarity in the plot)
+num_symbols = 10  
 
-T = 1.0 # Symbol period
+T = 1.0  
 
-fs = 100.0 # Sampling frequency
+fs = 100.0  
 
-t = np.arange(0, T, 1/fs) # Time vector for one symbol
+t = np.arange(0, T, 1/fs)
 
-bits = np.random.randint(0, 2, num_symbols * 2) # Two bits per QPSK symbol
 
-symbols = 2 * bits[0::2] + bits[1::2] # Map bits to QPSK symbols
+bits = np.random.randint(0, 2, num_symbols * 2)
 
-qpsk_signal = np.array([])
+i_bits = bits[0::2]  # Even-indexed bits
+
+q_bits = bits[1::2]  # Odd-indexed bits
+
+
+i_values = 2 * i_bits - 1
+
+q_values = 2 * q_bits - 1
+
+
+i_signal = np.array([])
+
+q_signal = np.array([])
+
+combined_signal = np.array([])
 
 symbol_times = []
 
-symbol_phases = {0: 0, 1: np.pi/2, 2: np.pi, 3: 3*np.pi/2}
+for i in range(num_symbols):
 
-for i, symbol in enumerate(symbols):
+    i_carrier = i_values[i] * np.cos(2 * np.pi * t / T)
 
-   phase = symbol_phases[symbol]
-   
-   symbol_time = i * T
-   
-   qpsk_segment = np.cos(2 * np.pi * t / T + phase) + 1j * np.sin(2 * np.pi * t / T + phase)
-   
-   qpsk_signal = np.concatenate((qpsk_signal, qpsk_segment))
-   
-   symbol_times.append(symbol_time)
+    q_carrier = q_values[i] * np.sin(2 * np.pi * t / T)
+
+    symbol_times.append(i * T)
+
+    i_signal = np.concatenate((i_signal, i_carrier))
+
+    q_signal = np.concatenate((q_signal, q_carrier))
+
+    combined_signal = np.concatenate((combined_signal, i_carrier + q_carrier))
 
 t_total = np.arange(0, num_symbols * T, 1/fs)
 
-plt.figure(figsize=(14, 12))
+
+
+plt.figure(figsize=(14, 9))
+
+
 
 plt.subplot(3, 1, 1)
 
-plt.plot(t_total, np.real(qpsk_signal), label='In-phase')
+plt.plot(t_total, i_signal, label='In-phase (cos)', color='blue')
 
 for i, symbol_time in enumerate(symbol_times):
 
-  plt.axvline(symbol_time, color='red', linestyle='--', linewidth=0.5)
-  
-plt.text(symbol_time + T/4, 0, f'{symbols[i]:02b}', fontsize=12, color='blue')
+    plt.axvline(symbol_time, color='red', linestyle='--', linewidth=0.5)
 
-plt.title('QPSK Signal - In-phase Component with Symbols')
+    plt.text(symbol_time + T/4, 0.8, f'{i_bits[i]}', fontsize=12, color='black')
+
+plt.title('In-phase Component (Cosine) - One Bit per Symbol')
 
 plt.xlabel('Time')
 
@@ -120,15 +137,15 @@ plt.legend()
 
 plt.subplot(3, 1, 2)
 
-plt.plot(t_total, np.imag(qpsk_signal), label='Quadrature', color='orange')
+plt.plot(t_total, q_signal, label='Quadrature (sin)', color='orange')
 
 for i, symbol_time in enumerate(symbol_times):
 
-  plt.axvline(symbol_time, color='red', linestyle='--', linewidth=0.5)
-  
-plt.text(symbol_time + T/4, 0, f'{symbols[i]:02b}', fontsize=12, color='blue')
+    plt.axvline(symbol_time, color='red', linestyle='--', linewidth=0.5)
 
-plt.title('QPSK Signal - Quadrature Component with Symbols')
+    plt.text(symbol_time + T/4, 0.8, f'{q_bits[i]}', fontsize=12, color='black')
+
+plt.title('Quadrature Component (Sine) - One Bit per Symbol')
 
 plt.xlabel('Time')
 
@@ -138,17 +155,18 @@ plt.grid(True)
 
 plt.legend()
 
+
 plt.subplot(3, 1, 3)
 
-plt.plot(t_total, np.real(qpsk_signal), label='Resultant QPSK Waveform', color='green')
+plt.plot(t_total, combined_signal, label='QPSK Signal = I + Q', color='green')
 
 for i, symbol_time in enumerate(symbol_times):
 
-  plt.axvline(symbol_time, color='red', linestyle='--', linewidth=0.5)
-  
-plt.text(symbol_time + T/4, 0, f'{symbols[i]:02b}', fontsize=12, color='blue')
+    plt.axvline(symbol_time, color='red', linestyle='--', linewidth=0.5)
 
-plt.title('Resultant QPSK Waveform')
+    plt.text(symbol_time + T/4, 0.8, f'{i_bits[i]}{q_bits[i]}', fontsize=12, color='black')
+
+plt.title('Combined QPSK Waveform')
 
 plt.xlabel('Time')
 
@@ -164,9 +182,10 @@ plt.show()
 
 
 # OUTPUT
-![image](https://github.com/user-attachments/assets/1d750b0b-901d-4d83-931b-d3c86f7c31c2)
+![image](https://github.com/user-attachments/assets/29717c5c-573b-4bac-bb34-e4683681dba7)
 
- 
+
+
 # RESULT / CONCLUSIONS
 
 The QPSK (Quadrature Phase Shift Keying) signal was successfully generated using python.
